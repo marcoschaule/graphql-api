@@ -1,0 +1,3 @@
+# A simple GraphQL-MongoDB API with TypeScript
+
+Description coming soon, hopefully...
