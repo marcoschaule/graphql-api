@@ -1,0 +1,4 @@
+# Project excludes
+data/db/
+node_modules/
+dist/
