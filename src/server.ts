@@ -10,8 +10,7 @@ import { graphql }              from 'graphql';
 import { buildSchema }          from 'graphql';
 import { LoadHelper }           from './helpers';
 import { UserController }       from './api/user';
-
-const settings = LoadHelper.load('../package.json');
+import { Settings }             from './settings';
 
 // *****************************************************************************
 // Class
@@ -29,8 +28,7 @@ class Server {
   // Private properties
   // ***************************************************************************
 
-  private _port        : number;
-  private _isProduction: boolean;
+  private _settings: Settings;
 
   // ***************************************************************************
   // Public methods
@@ -44,12 +42,9 @@ class Server {
    * @return {<Server>Object} - returns an instance of the Server class
    */
   constructor() {
-    
-    // is application run in production mode?
-    this._isProduction = process.env.NODE_ENV === 'production';
 
-    // get port depending on environment
-    this._port = this._isProduction ? settings.port : settings.devPort;
+    // get instance of settings singleton
+    this._settings = Settings.getInstance();
 
     // setup the express app
     this.app = express();
@@ -61,8 +56,8 @@ class Server {
     this._setupAPI();
 
     // listen to to the server
-    this.app.listen(this._port, () => {
-      console.info(`Server is running under port ${this._port}.`);
+    this.app.listen(this._settings.port, () => {
+      console.info(`Server is running under port ${this._settings.port}.`);
     });
   }
 
@@ -89,27 +84,6 @@ class Server {
    */
   private _setupAPI() {
     const userController = new UserController(this.app);
-
-    // Construct a schema, using GraphQL schema language
-    const schema = buildSchema(`
-      ${userController.schema}
-      
-      type Query {
-        user: User
-      }
-    `);
-    
-    // The root provides a resolver function for each API endpoint
-    const root = {
-      user: userController.resolve,
-    };
-
-    this.app.use('/graphql', graphqlHTTP({
-      schema   : schema,
-      rootValue: root,
-      pretty   : true,
-      graphiql : true,
-    }));
   }
 
   // ***************************************************************************
